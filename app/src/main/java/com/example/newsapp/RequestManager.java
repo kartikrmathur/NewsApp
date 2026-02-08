@@ -4,6 +4,10 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.example.newsapp.Models.NewsApiResponse;
+import com.example.newsapp.Models.NewsHeadlines;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,10 +32,22 @@ public class RequestManager {
             call.enqueue(new Callback<NewsApiResponse>() {
                 @Override
                 public void onResponse(Call<NewsApiResponse> call, Response<NewsApiResponse> response) {
-                    if(!response.isSuccessful()){
-                        Toast.makeText(context,"Error!!",Toast.LENGTH_SHORT).show();
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(context, "Error!!", Toast.LENGTH_SHORT).show();
+                        listener.onError("Request failed: " + response.code());
+                        return;
                     }
-                    listener.onFetchData(response.body().getArticles(), response.message());
+                    NewsApiResponse body = response.body();
+                    if (body == null) {
+                        Toast.makeText(context, "No data received", Toast.LENGTH_SHORT).show();
+                        listener.onError("No response data");
+                        return;
+                    }
+                    List<NewsHeadlines> articles = body.getArticles();
+                    if (articles == null) {
+                        articles = new ArrayList<>();
+                    }
+                    listener.onFetchData(articles, response.message());
                 }
 
                 @Override
